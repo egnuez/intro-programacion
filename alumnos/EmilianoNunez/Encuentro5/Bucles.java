@@ -3,6 +3,12 @@ import java.util.Scanner;
 public class Bucles {
     public static void main(String[] args) {
 
+        if (true){
+
+        } else if(true){
+            
+        }
+
         Scanner s = new Scanner(System.in);
         //int c = 2;
 
