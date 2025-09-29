@@ -36,6 +36,8 @@ public class Hero {
     public String getDebilidades() { return debilidades; }
     
     // Setters
+    public void setId(Integer id) { this.id = id; }
+
     public void setNombre(String nombre) { this.nombre = nombre; }
     public void setPoderes(String poderes) { this.poderes = poderes; }
     public void setDebilidades(String debilidades) { this.debilidades = debilidades; }

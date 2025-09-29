@@ -10,6 +10,7 @@ import spark.Route;
 import java.sql.Statement;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -91,14 +92,49 @@ public class HerosApi {
             }
         });
 
-        /*
+    
         post("/heroes", new Route() {
             @Override
             public Object handle(Request req, Response res) throws Exception {
                 res.type("application/json");
+
                 Hero hero = gson.fromJson(req.body(), Hero.class);
-                hero = new Hero(nextId++, hero.getName(), hero.getPower(), hero.getAvatar());
-                heroes.add(hero);
+
+                // Se conecta a la Base
+                
+                Connection connection = DriverManager.getConnection(jdbcUrl, username, password);
+
+                // Ejecutar la consulta
+
+                PreparedStatement preparedStatement = connection.prepareStatement(
+                    "insert into heroes (nombre, poderes, debilidades) values (?,?,?)",
+                    Statement.RETURN_GENERATED_KEYS
+                );
+
+                // Bindear los campos
+
+                preparedStatement.setString(1, hero.getNombre());
+                preparedStatement.setString(2, hero.getPoderes());
+                preparedStatement.setString(3, hero.getDebilidades());
+
+                // Ejecutar el INSERT
+
+                preparedStatement.executeUpdate();
+
+                // Obtener el ID generado por la DB
+
+                ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
+
+                if (generatedKeys.next()) {
+                    int lastInsertedId = generatedKeys.getInt(1);
+                    hero.setId(lastInsertedId);
+                    System.out.println("Last inserted ID: " + lastInsertedId);
+                } else {
+                    System.out.println("Error ejecutando el insert");
+                }
+
+                // Devolver el heroe
+                
                 return gson.toJson(hero);
             }
         });
@@ -108,19 +144,29 @@ public class HerosApi {
             public Object handle(Request req, Response res) throws Exception {
                 int id = Integer.parseInt(req.params(":id"));
                 res.type("application/json");
-                for (Hero h : heroes) {
-                    if (h.getId() == id) {
-                        heroes.remove(h);
-                        return gson.toJson(h);
-                    }
-                }
-
-                // No existe
                 
-                res.status(404);
-                return "";
+                // Se conecta a la Base
+                
+                Connection connection = DriverManager.getConnection(jdbcUrl, username, password);
+
+                // Prepara consulta
+
+                PreparedStatement preparedStatement = connection.prepareStatement("delete from heroes where id = ?");
+                preparedStatement.setInt(1, id); 
+
+                // Ejecutar consulta
+
+                int rowsAffected = preparedStatement.executeUpdate();
+                System.out.println(rowsAffected + " row(s) deleted successfully.");
+
+                if (rowsAffected > 0){
+                    res.status(200);
+                    return rowsAffected + " filas(s) borradas";
+                }else{
+                    res.status(404);
+                    return "No existe un registro con ese id";
+                }
             }
         });
-        */
     }
 }
