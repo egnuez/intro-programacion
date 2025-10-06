@@ -21,9 +21,29 @@ public class HerosApi {
     private static String username = "heroestp";
     private static String password = "oficios2025!";
 
+    private static void enableCORS() {
+        options("/*", (req, res) -> {
+            String headers = req.headers("Access-Control-Request-Headers");
+            if (headers != null) res.header("Access-Control-Allow-Headers", headers);
+
+            String method = req.headers("Access-Control-Request-Method");
+            if (method != null) res.header("Access-Control-Allow-Methods", method);
+
+            return "OK";
+        });
+
+        before((req, res) -> {
+            res.header("Access-Control-Allow-Origin", "*");
+            res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+            res.header("Access-Control-Allow-Headers", "Content-Type,Authorization");
+        });
+    }
+
     public static void main(String[] args) {
 
         port(4567);
+
+        enableCORS();
 
         get("/heroes", new Route() {
             @Override
